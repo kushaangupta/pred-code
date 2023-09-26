@@ -1,0 +1,15 @@
+setup.py
+W_Python/W.py
+W_Python/_W_basic.py
+W_Python/_W_dict.py
+W_Python/_W_io.py
+W_Python/_W_list.py
+W_Python/_W_string.py
+W_Python/_W_tools.py
+W_Python/__init__.py
+W_Python.egg-info/PKG-INFO
+W_Python.egg-info/SOURCES.txt
+W_Python.egg-info/dependency_links.txt
+W_Python.egg-info/not-zip-safe
+W_Python.egg-info/requires.txt
+W_Python.egg-info/top_level.txt

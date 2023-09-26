@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: W-Gym
+Version: 0.0.0
+Summary: siyus Gym functions
+Author: Siyu Wang
+Author-email: wangxsiyu@gmail.com
+Requires-Dist: gym
+Requires-Dist: numpy
+Requires-Dist: pygame
