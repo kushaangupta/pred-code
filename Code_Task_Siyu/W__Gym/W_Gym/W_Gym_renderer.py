@@ -13,7 +13,7 @@ class W_Gym_renderer(W_Gym_task):
     # objects to render
     _renderer_auto_params = {} # dict to help perform some default rendering for obs, actions, reward etc
     _renderer_image_array = []
-
+    
     def __init__(self, render_mode = None, window_size = [512, 512], \
                  render_fps = None, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
@@ -167,9 +167,26 @@ class W_Gym_renderer(W_Gym_task):
             pygame.draw.rect(canvas, tcol, \
                 np.concatenate((-tradius + tpos, tradius * 2), axis = None), 0)
         elif tplottype == "image":
-            self._render_array(tval, tpos, tradius)
+            self._render_draw_array(tval, tpos, tradius)
         return canvas
     
+    def _render_draw_array(self, z, pos, tradius = [1,1]):
+        tradius = np.array(tradius)
+        if len(z.shape) < 2:
+            z = z.reshape(z.shape.__add__((1,)))
+        if len(z.shape) == 2:
+            z = np.stack([z,z,z], axis = 2)
+        rx = np.ceil(tradius[0]/z.shape[0])
+        ry = np.ceil(tradius[1]/z.shape[1])
+        r = np.min((rx, ry))
+        if r > 1:
+            r = r.astype('int')
+            z = np.kron(z, np.ones((r,r,1)))
+        import pygame
+        surf = pygame.surfarray.make_surface(z)
+        image = {'image':surf, 'pos':pos - np.array(surf.get_size())/2}
+        self._renderer_image_array.append(image)
+
     def _render_frame_obs(self, canvas, *arg, **kwarg):
         obs = self._obs
         if hasattr(self, 'custom_render_frame_obs_format'):

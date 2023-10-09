@@ -116,7 +116,7 @@ class W_Gym_task():
         # set state flag for advancing upon effective actions
         c = np.zeros(self._metadata_state['n_state'])
         if state_immediateadvance is not None:
-            tid = W.W_list_findidx(state_immediateadvance, self._metadata_state['statenames'])
+            tid = self._find_state(state_immediateadvance)
             c[tid] = 1
         self._metadata_state['is_immediate_advance'] = c
         # set state flag for terminating state
@@ -127,7 +127,7 @@ class W_Gym_task():
                 terminating_state = state_names[-1] # default to be last state
         terminating_state = W.W_enlist(terminating_state)
         c = np.zeros(self._metadata_state['n_state'])
-        tid = W.W_list_findidx(terminating_state, self._metadata_state['statenames'])
+        tid = self._find_state(terminating_state)
         c[tid] = 1
         self._metadata_state['is_terminating_state'] = c
         # set state transition
@@ -247,9 +247,12 @@ class W_Gym_task():
     
     def _go_to_state(self, newstate):
         if isinstance(newstate, str):
-            newstate = W.W_list_findidx(newstate, self._metadata_state['statenames'])
+            newstate = self._find_state(newstate)
         self._state = newstate
         self._reset_state()
+
+    def _find_state(self, state):
+        return W.W_list_findidx(state, self._metadata_state['statenames'])
 
     def step(self, action_motor, is_record = True, render_options = ["obs","action","reward","time"]):
         reward = 0
@@ -278,22 +281,23 @@ class W_Gym_task():
         if not is_error and hasattr(self, 'custom_step_reward'):
             treward = self.custom_step_reward(action)
             reward += treward
-        # get consequences of actions (state transition)
         # determine if state-transition occurs
         is_transition = False
-        if not is_error:
-            if self._metadata_state['is_immediate_advance'][self._state] == 1 and is_effective:
-                is_transition = True
-            if self._time_state >= self._metadata_state['timelimits'][self._state]:
-                is_transition = True
-        # state transition
-        if is_error:
-            treward, t_is_done = self._abort()
-        elif is_transition:
-            treward, t_is_done = self._state_transition()
+        if self._metadata_state['is_immediate_advance'][self._state] == 1 and is_effective:
+            is_transition = True
+        if self._time_state >= self._metadata_state['timelimits'][self._state]:
+            is_transition = True
+        # get consequences of actions (state transition)
+        if not is_error and hasattr(self, 'custom_state_transition'):
+            is_error, treward, t_is_done = self.custom_state_transition(action, is_effective = is_effective, is_transition = is_transition)
+        elif not is_error and is_transition:
+            treward, t_is_done = self._auto_state_transition()
         else:
             treward = 0
             t_is_done = False
+        # state transition
+        if is_error:
+            treward, t_is_done = self._abort()
         reward += treward
         is_done = is_done or t_is_done
         # get consequences of actions (after possible state transition)
@@ -329,14 +333,14 @@ class W_Gym_task():
             obs = self._get_obs()
         return obs, reward, is_done, self._time_task
 
-    def _state_transition(self):
+    def _auto_state_transition(self):
         reward = 0
         is_done = False
         if self._metadata_state['is_terminating_state'][self._state]:
             is_done = self._advance_trial()
         else:
-            if hasattr(self, 'custom_state_transition'):
-                newstate = self.custom_state_transition()
+            if hasattr(self, 'custom_auto_state_transition'):
+                newstate = self.custom_auto_state_transition()
             elif self._metadata_state['matrix_transition'] == "next":
                 newstate = self._state + 1
             else:

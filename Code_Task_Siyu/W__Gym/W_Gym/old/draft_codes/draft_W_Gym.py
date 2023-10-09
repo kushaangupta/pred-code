@@ -6,7 +6,6 @@ class W_Gym_render(gym.Env):
     dt = None
     obs_Name2DimNumber = None
     plot_params = dict()
-    image_lst = []
   
         if hasattr(self, 'custom_setup_render'):
             self.custom_setup_render()
@@ -31,22 +30,6 @@ class W_Gym_render(gym.Env):
 
 
 
-    def _render_array(self, z, pos, tradius = [1,1]):
-        tradius = np.array(tradius)
-        if len(z.shape) < 2:
-            z = z.reshape(z.shape.__add__((1,)))
-        if len(z.shape) == 2:
-            z = np.stack([z,z,z], axis = 2)
-        rx = np.ceil(tradius[0]/z.shape[0])
-        ry = np.ceil(tradius[1]/z.shape[1])
-        r = np.min((rx, ry))
-        if r > 1:
-            r = r.astype('int')
-            z = np.kron(z, np.ones((r,r,1)))
-        import pygame
-        surf = pygame.surfarray.make_surface(z)
-        image = {'image':surf, 'pos':pos - np.array(surf.get_size())/2}
-        self.image_lst.append(image)
 
 
 
