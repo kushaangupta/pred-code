@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: W-Python
-Version: 0.0.0
-Summary: siyus python functions
-Author: Siyu Wang
-Author-email: wangxsiyu@gmail.com
-Requires-Dist: numpy
